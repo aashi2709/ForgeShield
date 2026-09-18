@@ -262,6 +262,192 @@ def render_secondary_page(
         render_safety_copilot()
         return
 
+    if selected_page == "Knowledge Base":
+        render_html(
+            """
+            <div class="fs-eyebrow">KNOWLEDGE BASE</div>
+            <div class="fs-page-title">ForgeShield Research Knowledge Base</div>
+            <div class="fs-page-subtitle">
+                Retrieval corpus supporting evidence-grounded safety analysis.
+            </div>
+            <div style="height:24px;"></div>
+            """
+        )
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            st.metric("Documents", "84")
+
+        with col2:
+            st.metric("Indexed Chunks", "158")
+
+        with col3:
+            st.metric("Vector Store", "ChromaDB")
+
+        st.markdown("### Evidence Coverage")
+        st.markdown(
+            """
+            - **Safety procedures:** 4
+            - **Synthetic incident records:** 80
+            - **Incident types:** 8
+            - **Embedding dimension:** 384
+            """
+        )
+
+        st.markdown("### Evidence Policy")
+        st.info(
+            "The current research corpus contains synthetic safety-event records "
+            "and synthetic research procedures. These artifacts demonstrate the "
+            "RAG pipeline and must not be interpreted as validated industrial "
+            "operating procedures."
+        )
+
+        st.markdown("### Retrieval Pipeline")
+        st.markdown(
+            "Question → Embedding → ChromaDB retrieval → Evidence filtering → "
+            "Grounded generation → Citation validation"
+        )
+
+        return
+
+    if selected_page == "Documentation":
+        render_html(
+            """
+            <div class="fs-eyebrow">DOCUMENTATION</div>
+            <div class="fs-page-title">Research Documentation</div>
+            <div class="fs-page-subtitle">
+                ForgeShield proof-of-concept methodology, datasets, models, and
+                research scope.
+            </div>
+            <div style="height:24px;"></div>
+            """
+        )
+
+        st.markdown("### Research Pipeline")
+        st.markdown(
+            """
+            **Industrial Data → Data Engineering → EDA → ML → Anomaly Detection
+            → Deep Learning → Risk Prediction → XAI → RAG → GenAI Safety Copilot**
+            """
+        )
+
+        st.markdown("### Datasets")
+        st.markdown(
+            """
+            | Dataset | Purpose |
+            |---|---|
+            | **AI4I 2020** | Machine failure classification |
+            | **NASA C-MAPSS FD001** | Remaining Useful Life prediction |
+            | **Synthetic Safety Events** | Risk integration and RAG demonstration |
+            """
+        )
+
+        st.markdown("### Model Families")
+        st.markdown(
+            """
+            - Logistic Regression
+            - Decision Tree
+            - Random Forest
+            - KNN
+            - SVM
+            - Naive Bayes
+            - Gradient Boosting
+            - XGBoost
+            - LSTM
+            - GRU
+            - CNN-LSTM
+            - LSTM Autoencoder
+            - Isolation Forest
+            - One-Class SVM
+            - K-Means
+            - DBSCAN
+            - Agglomerative Clustering
+            """
+        )
+
+        st.markdown("### Explainability & GenAI")
+        st.markdown(
+            """
+            **XAI:** SHAP-based global and model-specific feature attribution.
+
+            **RAG:** Evidence retrieval from the ForgeShield research knowledge
+            base followed by constrained local LLM generation.
+
+            **Safety Copilot:** Separates facts, hypotheses, recommended actions,
+            evidence sources, and limitations.
+            """
+        )
+
+        st.markdown("### Research Scope")
+        st.info(
+            "ForgeShield is a research proof of concept. The system demonstrates "
+            "the proposed analytical and generative-AI architecture rather than "
+            "a production-certified industrial safety system."
+        )
+
+        return
+
+    if selected_page == "Settings":
+        render_html(
+            """
+            <div class="fs-eyebrow">SETTINGS</div>
+            <div class="fs-page-title">ForgeShield Configuration</div>
+            <div class="fs-page-subtitle">
+                Runtime configuration and proof-of-concept system status.
+            </div>
+            <div style="height:24px;"></div>
+            """
+        )
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("### AI Runtime")
+            st.markdown(
+                """
+                **LLM:** Qwen3:8B  
+                **Inference:** Local Ollama  
+                **Generation:** Evidence-constrained
+                """
+            )
+
+        with col2:
+            st.markdown("### Retrieval")
+            st.markdown(
+                """
+                **Vector Store:** ChromaDB  
+                **Knowledge Base:** ForgeShield research corpus  
+                **Indexed Chunks:** 158
+                """
+            )
+
+        st.markdown("### System Status")
+        status_rows = [
+            {"Component": "Supervised Models", "Status": "Ready"},
+            {"Component": "Anomaly Detection", "Status": "Ready"},
+            {"Component": "C-MAPSS RUL Models", "Status": "Ready"},
+            {"Component": "SHAP Explainability", "Status": "Ready"},
+            {"Component": "Risk Scoring", "Status": "Ready"},
+            {"Component": "RAG Retrieval", "Status": "Ready"},
+            {"Component": "Safety Copilot", "Status": "Ready"},
+        ]
+
+        st.dataframe(
+            status_rows,
+            use_container_width=True,
+            hide_index=True,
+        )
+
+        st.markdown("### Research Mode")
+        st.info(
+            "ForgeShield is configured as a local research proof of concept. "
+            "Synthetic evidence is explicitly identified and should not be "
+            "treated as validated industrial safety guidance."
+        )
+
+        return
+
     page_descriptions = {
         "Predictive Health": (
             "Predictive Health",
