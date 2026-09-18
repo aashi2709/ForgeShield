@@ -62,6 +62,10 @@ from dashboard.views.machine_intelligence import (
     render_machine_intelligence as _render_machine_intelligence,
 )  # noqa: E402
 
+from dashboard.views.predictive_health import (
+    render_predictive_health as _render_predictive_health,
+)  # noqa: E402
+
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -197,6 +201,7 @@ _format_sensor = __import__(
 )._format_sensor
 
 render_machine_intelligence = _render_machine_intelligence
+render_predictive_health = _render_predictive_health
 
 
 # ---------------------------------------------------------------------------
@@ -211,6 +216,10 @@ def render_secondary_page(
 ) -> None:
     if selected_page == "Machine Intelligence":
         render_machine_intelligence(df)
+        return
+
+    if selected_page == "Predictive Health":
+        render_predictive_health()
         return
 
     page_descriptions = {
