@@ -139,7 +139,7 @@ def set_seed():
 def load_data():
 
     X_train = np.load(
-        DATA_DIR / "X_train.npy"
+        DATA_DIR / "X_train_split.npy"
     )
 
     X_val = np.load(
@@ -151,7 +151,7 @@ def load_data():
     )
 
     train_units = np.load(
-        DATA_DIR / "train_units.npy"
+        DATA_DIR / "train_split_units.npy"
     )
 
     val_units = np.load(
@@ -163,7 +163,7 @@ def load_data():
     )
 
     y_train = np.load(
-        DATA_DIR / "y_train.npy"
+        DATA_DIR / "y_train_split.npy"
     )
 
     y_val = np.load(
