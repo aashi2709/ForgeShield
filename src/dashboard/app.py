@@ -78,6 +78,10 @@ from dashboard.views.incident_intelligence import (
     render_incident_intelligence as _render_incident_intelligence,
 )  # noqa: E402
 
+from dashboard.views.safety_copilot import (
+    render_safety_copilot as _render_safety_copilot,
+)  # noqa: E402
+
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -220,6 +224,7 @@ render_predictive_health = _render_predictive_health
 render_anomaly_detection = _render_anomaly_detection
 render_explainability = _render_explainability
 render_incident_intelligence = _render_incident_intelligence
+render_safety_copilot = _render_safety_copilot
 
 
 # ---------------------------------------------------------------------------
@@ -251,6 +256,10 @@ def render_secondary_page(
 
     if selected_page == "Incident Intelligence":
         render_incident_intelligence()
+        return
+
+    if selected_page == "Safety Copilot":
+        render_safety_copilot()
         return
 
     page_descriptions = {
