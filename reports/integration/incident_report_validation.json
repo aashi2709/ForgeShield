@@ -1,0 +1,21 @@
+{
+    "valid": true,
+    "valid_incident_ids": [
+        "INC-0003",
+        "INC-0006",
+        "INC-0010"
+    ],
+    "valid_procedure_ids": [
+        "FSP-SOP-001"
+    ],
+    "cited_incident_ids": [
+        "INC-0003",
+        "INC-0006",
+        "INC-0010"
+    ],
+    "cited_procedure_ids": [
+        "FSP-SOP-001"
+    ],
+    "invalid_incident_ids": [],
+    "invalid_procedure_ids": []
+}
