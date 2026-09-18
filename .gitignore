@@ -18,10 +18,7 @@ data/raw/
 data/processed/
 
 # Models
-models/*.pkl
-models/*.joblib
-models/*.pt
-models/*.pth
+models/
 
 # Generated reports
 reports/figures/
@@ -32,3 +29,6 @@ reports/figures/
 # IDE
 .vscode/
 .idea/
+
+# Vector database
+knowledge_base/chroma_db/

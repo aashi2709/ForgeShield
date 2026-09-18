@@ -1,0 +1,15 @@
+{
+    "project": "ForgeShield",
+    "collection": "forgeshield_knowledge",
+    "embedding_model": "all-MiniLM-L6-v2",
+    "chunk_size": 1200,
+    "chunk_overlap": 200,
+    "document_count": 80,
+    "chunk_count": 150,
+    "document_types": [
+        "synthetic_incident"
+    ],
+    "synthetic_data": true,
+    "source_directory": "knowledge_base/docs",
+    "vector_database": "ChromaDB"
+}

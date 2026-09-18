@@ -1,0 +1,59 @@
+# Vibration Anomaly Incident
+
+**Incident ID:** INC-0013
+
+**Machine ID:** MACHINE-003
+
+**Event Type:** vibration_anomaly
+
+**Severity:** High
+
+**Synthetic Record:** True
+
+## Incident Summary
+
+Abnormal machine vibration was detected during operation. The condition may indicate mechanical degradation.
+
+## Sensor Context
+
+| Sensor | Value |
+|---|---:|
+| Air temperature | 296.72 |
+| Process temperature | 309.47 |
+| Rotational speed | 2730 |
+| Torque | 56.59 |
+| Tool wear | 87 |
+
+## Possible Contributing Factors
+
+- Abnormal rotational behavior
+- Mechanical imbalance
+- Component wear
+- Increased operating load
+
+## Potential Root Causes
+
+- Bearing degradation
+- Shaft imbalance
+- Mechanical misalignment
+- Component wear
+
+## Corrective Actions
+
+- Inspect bearings and rotating components
+- Check shaft alignment
+- Inspect for loose mechanical components
+- Reduce operation if vibration continues to increase
+
+## Preventive Actions
+
+- Perform periodic vibration inspections
+- Maintain rotating components
+- Track vibration trends
+- Include alignment checks in preventive maintenance
+
+## Data Provenance
+
+This document is a synthetic safety-event record generated for the ForgeShield research proof of concept.
+
+It must not be interpreted as a real-world incident report or as evidence of an actual industrial event.

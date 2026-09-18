@@ -1,0 +1,19 @@
+{
+    "dataset_name": "ForgeShield Synthetic Safety Incident Knowledge Base",
+    "is_synthetic": true,
+    "random_seed": 42,
+    "total_incidents": 80,
+    "event_types": [
+        "machine_overheating",
+        "vibration_anomaly",
+        "gas_leakage",
+        "guard_open",
+        "unsafe_behavior",
+        "slip_fall_hazard",
+        "high_noise_level",
+        "normal_operation"
+    ],
+    "incidents_per_event_type": 10,
+    "source": "Generated locally for ForgeShield research POC",
+    "usage": "Synthetic records for RAG retrieval, incident interpretation, and dashboard demonstration."
+}
