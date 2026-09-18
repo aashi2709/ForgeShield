@@ -70,6 +70,10 @@ from dashboard.views.anomaly_detection import (
     render_anomaly_detection as _render_anomaly_detection,
 )  # noqa: E402
 
+from dashboard.views.explainability import (
+    render_explainability as _render_explainability,
+)  # noqa: E402
+
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -210,6 +214,7 @@ _format_sensor = __import__(
 render_machine_intelligence = _render_machine_intelligence
 render_predictive_health = _render_predictive_health
 render_anomaly_detection = _render_anomaly_detection
+render_explainability = _render_explainability
 
 
 # ---------------------------------------------------------------------------
@@ -232,6 +237,10 @@ def render_secondary_page(
 
     if selected_page == "Anomaly Detection":
         render_anomaly_detection()
+        return
+
+    if selected_page == "Explainability":
+        render_explainability()
         return
 
     page_descriptions = {
