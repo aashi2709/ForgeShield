@@ -213,6 +213,40 @@ def run_preprocessing() -> None:
     for feature in FEATURES:
         print(f"  ✓ {feature}")
 
+     #-------------------------------------------------------
+    # Preserve original test-set metadata
+    # ---------------------------------------------------------
+
+    test_metadata_columns = [
+        column
+        for column in [
+            "UID",
+            "Type",
+            "Air temperature",
+            "Process temperature",
+            "Rotational speed",
+            "Torque",
+            "Tool wear",
+            "Machine failure",
+            "TWF",
+            "HDF",
+            "PWF",
+            "OSF",
+            "RNF",
+        ]
+        if column in df.columns
+    ]
+
+    test_metadata = df.loc[
+        X_test.index,
+        test_metadata_columns,
+    ].copy()
+
+    test_metadata.to_csv(
+        OUTPUT_DIR / "test_metadata.csv",
+        index=False,
+    )
+
     # ---------------------------------------------------------
     # Save datasets
     # ---------------------------------------------------------

@@ -26,13 +26,9 @@ METADATA_PATH = (
     / "knowledge_base_metadata.json"
 )
 
-EMBEDDING_MODEL = (
-    "all-MiniLM-L6-v2"
-)
+EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
-COLLECTION_NAME = (
-    "forgeshield_knowledge"
-)
+COLLECTION_NAME = "forgeshield_knowledge"
 
 CHUNK_SIZE = 1200
 CHUNK_OVERLAP = 200
@@ -42,7 +38,9 @@ def load_documents():
 
     documents = []
 
-    for path in DOCUMENT_DIR.rglob("*.md"):
+    for path in sorted(
+        DOCUMENT_DIR.rglob("*.md")
+    ):
 
         text = path.read_text(
             encoding="utf-8"
@@ -68,9 +66,6 @@ def chunk_text(
 ):
     """
     Split documents into overlapping character chunks.
-
-    Overlap preserves context when an important statement
-    occurs near a chunk boundary.
     """
 
     if len(text) <= chunk_size:
@@ -92,16 +87,12 @@ def chunk_text(
         ].strip()
 
         if chunk:
-            chunks.append(
-                chunk
-            )
+            chunks.append(chunk)
 
         if end >= len(text):
             break
 
-        start = (
-            end - overlap
-        )
+        start = end - overlap
 
     return chunks
 
@@ -125,21 +116,86 @@ def extract_metadata(
     path,
     text,
 ):
+    """
+    Extract metadata according to document type.
+
+    Incident records and safety procedures are deliberately
+    represented as different evidence classes.
+    """
+
+    relative_path = str(
+        path.relative_to(
+            PROJECT_ROOT
+        )
+    )
 
     metadata = {
-        "source": str(
-            path.relative_to(
-                PROJECT_ROOT
-            )
-        ),
-        "document_type": (
-            "synthetic_incident"
-        ),
+        "source": relative_path,
         "is_synthetic": True,
     }
 
-    # Extract useful fields from the
-    # generated incident markdown.
+    # ---------------------------------------------------------
+    # Safety procedure metadata
+    # ---------------------------------------------------------
+
+    if (
+        "safety_procedures"
+        in path.parts
+    ):
+
+        metadata[
+            "document_type"
+        ] = "safety_procedure"
+
+        metadata[
+            "evidence_type"
+        ] = "procedure"
+
+        metadata[
+            "procedure_id"
+        ] = "unknown"
+
+        for line in text.splitlines():
+
+            line = line.strip()
+
+            if line.startswith(
+                "**Document ID:**"
+            ):
+
+                metadata[
+                    "procedure_id"
+                ] = line.split(
+                    "**Document ID:**",
+                    1,
+                )[1].strip()
+
+            elif line.startswith(
+                "**is_synthetic:**"
+            ):
+
+                value = line.split(
+                    "**is_synthetic:**",
+                    1,
+                )[1].strip().lower()
+
+                metadata[
+                    "is_synthetic"
+                ] = value == "true"
+
+        return metadata
+
+    # ---------------------------------------------------------
+    # Synthetic incident metadata
+    # ---------------------------------------------------------
+
+    metadata[
+        "document_type"
+    ] = "synthetic_incident"
+
+    metadata[
+        "evidence_type"
+    ] = "incident"
 
     for line in text.splitlines():
 
@@ -261,7 +317,9 @@ def build_chunks(
 
 def main():
 
-    print("\n" + "=" * 70)
+    print(
+        "\n" + "=" * 70
+    )
 
     print(
         "FORGESHIELD | RAG KNOWLEDGE BASE"
@@ -290,6 +348,34 @@ def main():
             "No Markdown documents found in "
             f"{DOCUMENT_DIR}"
         )
+
+    # Document type summary
+
+    incident_documents = 0
+    procedure_documents = 0
+
+    for document in documents:
+
+        if (
+            "safety_procedures"
+            in document["path"].parts
+        ):
+
+            procedure_documents += 1
+
+        else:
+
+            incident_documents += 1
+
+    print(
+        f"  Synthetic incidents: "
+        f"{incident_documents}"
+    )
+
+    print(
+        f"  Safety procedures: "
+        f"{procedure_documents}"
+    )
 
     # ---------------------------------------------------------
     # Chunk documents
@@ -355,7 +441,7 @@ def main():
     )
 
     # ---------------------------------------------------------
-    # Create persistent ChromaDB
+    # Initialize ChromaDB
     # ---------------------------------------------------------
 
     print(
@@ -374,10 +460,6 @@ def main():
             )
         )
     )
-
-    # Delete the existing collection
-    # so rebuilding the knowledge base
-    # remains deterministic.
 
     try:
 
@@ -399,11 +481,10 @@ def main():
         client.create_collection(
             name=COLLECTION_NAME,
             metadata={
-                "description":
-                    (
-                        "ForgeShield evidence "
-                        "retrieval knowledge base"
-                    ),
+                "description": (
+                    "ForgeShield evidence "
+                    "retrieval knowledge base"
+                ),
                 "embedding_model":
                     EMBEDDING_MODEL,
             },
@@ -411,7 +492,7 @@ def main():
     )
 
     # ---------------------------------------------------------
-    # Insert chunks
+    # Index chunks
     # ---------------------------------------------------------
 
     print(
@@ -441,7 +522,7 @@ def main():
     )
 
     # ---------------------------------------------------------
-    # Save metadata
+    # Save knowledge-base metadata
     # ---------------------------------------------------------
 
     metadata = {
@@ -467,8 +548,16 @@ def main():
             len(chunks),
 
         "document_types": [
-            "synthetic_incident"
+            "synthetic_incident",
+            "safety_procedure",
         ],
+
+        "document_counts": {
+            "synthetic_incidents":
+                incident_documents,
+            "safety_procedures":
+                procedure_documents,
+        },
 
         "synthetic_data":
             True,
@@ -500,108 +589,136 @@ def main():
         "\nRunning retrieval sanity check..."
     )
 
-    query = (
-        "What should be done when "
-        "a machine is overheating?"
-    )
-
-    query_embedding = (
-        embedding_model.encode(
-            [query],
-            normalize_embeddings=True,
-        )
-    )
-
-    results = collection.query(
-        query_embeddings=(
-            query_embedding.tolist()
+    test_queries = [
+        (
+            "What should be done when "
+            "a machine is overheating?"
         ),
-        n_results=3,
-    )
+        (
+            "What should an operator do "
+            "if gas leakage is detected?"
+        ),
+    ]
 
-    print(
-        f"\n  Query:"
-    )
+    for query in test_queries:
 
-    print(
-        f"  {query}"
-    )
-
-    print(
-        "\n  Retrieved documents:"
-    )
-
-    retrieved_documents = (
-        results.get(
-            "documents",
-            [[]],
-        )[0]
-    )
-
-    retrieved_metadatas = (
-        results.get(
-            "metadatas",
-            [[]],
-        )[0]
-    )
-
-    retrieved_distances = (
-        results.get(
-            "distances",
-            [[]],
-        )[0]
-    )
-
-    for index, document in enumerate(
-        retrieved_documents
-    ):
-
-        metadata = (
-            retrieved_metadatas[
-                index
-            ]
+        query_embedding = (
+            embedding_model.encode(
+                [query],
+                normalize_embeddings=True,
+            )
         )
 
-        distance = (
-            retrieved_distances[
-                index
-            ]
+        results = collection.query(
+            query_embeddings=(
+                query_embedding.tolist()
+            ),
+            n_results=3,
+        )
+
+        retrieved_documents = (
+            results.get(
+                "documents",
+                [[]],
+            )[0]
+        )
+
+        retrieved_metadatas = (
+            results.get(
+                "metadatas",
+                [[]],
+            )[0]
+        )
+
+        retrieved_distances = (
+            results.get(
+                "distances",
+                [[]],
+            )[0]
         )
 
         print(
-            f"\n  Result {index + 1}"
+            f"\n  Query:"
         )
 
         print(
-            f"    Source: "
-            f"{metadata.get('source')}"
+            f"  {query}"
         )
 
         print(
-            f"    Event: "
-            f"{metadata.get('event_type')}"
+            "\n  Retrieved evidence:"
         )
 
-        print(
-            f"    Severity: "
-            f"{metadata.get('severity')}"
-        )
+        for index, document in enumerate(
+            retrieved_documents
+        ):
 
-        print(
-            f"    Distance: "
-            f"{distance:.4f}"
-        )
+            metadata = (
+                retrieved_metadatas[
+                    index
+                ]
+            )
 
-        preview = (
-            document
-            .replace("\n", " ")
-            [:250]
-        )
+            distance = (
+                retrieved_distances[
+                    index
+                ]
+            )
 
-        print(
-            f"    Preview: "
-            f"{preview}..."
-        )
+            print(
+                f"\n  Result {index + 1}"
+            )
+
+            print(
+                f"    Source: "
+                f"{metadata.get('source')}"
+            )
+
+            print(
+                f"    Evidence Type: "
+                f"{metadata.get('evidence_type')}"
+            )
+
+            print(
+                f"    Document Type: "
+                f"{metadata.get('document_type')}"
+            )
+
+            print(
+                f"    Incident ID: "
+                f"{metadata.get('incident_id', '-')}"
+            )
+
+            print(
+                f"    Procedure ID: "
+                f"{metadata.get('procedure_id', '-')}"
+            )
+
+            print(
+                f"    Event: "
+                f"{metadata.get('event_type', '-')}"
+            )
+
+            print(
+                f"    Severity: "
+                f"{metadata.get('severity', '-')}"
+            )
+
+            print(
+                f"    Distance: "
+                f"{distance:.4f}"
+            )
+
+            preview = (
+                document
+                .replace("\n", " ")
+                [:250]
+            )
+
+            print(
+                f"    Preview: "
+                f"{preview}..."
+            )
 
     # ---------------------------------------------------------
     # Completion

@@ -1,0 +1,326 @@
+{
+    "project": "ForgeShield",
+    "evaluation_type": "RAG grounding evaluation",
+    "summary": {
+        "test_cases": 4,
+        "average_grounding_score": 1.0,
+        "check_pass_rates": {
+            "sections_complete": 1.0,
+            "citation_grounded": 1.0,
+            "insufficient_behavior_correct": 1.0,
+            "synthetic_disclosed": 1.0
+        }
+    },
+    "results": [
+        {
+            "test_id": "overheating",
+            "question": "What should an operator do when a machine shows overheating?",
+            "event_type": null,
+            "expected_supported": true,
+            "answer": "FACTS  \n- When a machine shows overheating, elevated process and air temperatures were observed (INC-0001: 317.1 \u00b0C process temperature, 303.51 \u00b0C air temperature; INC-0009: 316.51 \u00b0C process temperature, 304.0 \u00b0C air temperature).  \n- Corrective actions for overheating include inspecting the cooling system, checking process and air temperature sensors, reducing machine load if safe, and inspecting for heat-related damage (INC-0001, INC-0009).  \n- Preventive actions include periodic cooling-system inspections, monitoring temperature trends, maintaining temperature sensors, and reviewing preventive-maintenance intervals (INC-0001, INC-0009).  \n\nPOSSIBLE HYPOTHESES  \n- Possible contributing factors include reduced cooling effectiveness, insufficient heat dissipation, extended machine operation, increased mechanical load, or cooling-system degradation (INC-0001, INC-0009, FSP-SOP-001).  \n- These factors are explicitly listed as possible explanations but are not confirmed root causes without further investigation.  \n\nRECOMMENDED ACTIONS  \n1. Assess the machine condition and current operating state.  \n2. Reduce machine load if operationally safe.  \n3. Inspect the cooling system.  \n4. Check process-temperature and air-temperature sensors.  \n5. Inspect the machine for visible heat-related damage.  \n6. Follow site-specific shutdown procedures if continued operation is unsafe (FSP-SOP-001).  \n\nEVIDENCE SOURCES  \n- Incident IDs: INC-0001, INC-0009  \n- Procedure ID: FSP-SOP-001  \n- Source paths: `knowledge_base/docs/synthetic_incidents/INC-0001_machine_overheating.md`, `knowledge_base/docs/synthetic_incidents/INC-0009_machine_overheating.md`, `knowledge_base/docs/safety_procedures/machine_overheating_sop.md`  \n\nLIMITATIONS  \n- All retrieved evidence is synthetic and not an official industrial safety standard.  \n- The procedures and incident records are part of a ForgeShield research proof of concept and should not be treated as site-specific guidelines.  \n- No explicit guidance is provided on how to determine \"operational safety\" for load reduction or shutdown decisions.",
+            "evaluation": {
+                "checks": {
+                    "sections_complete": true,
+                    "citation_grounded": true,
+                    "insufficient_behavior_correct": true,
+                    "synthetic_disclosed": true
+                },
+                "passed_checks": 4,
+                "total_checks": 4,
+                "grounding_score": 1.0,
+                "retrieved_ids": [
+                    "FSP-SOP-001",
+                    "INC-0001",
+                    "INC-0009"
+                ],
+                "cited_ids": [
+                    "FSP-SOP-001",
+                    "INC-0001",
+                    "INC-0009"
+                ],
+                "unsupported_ids": [],
+                "missing_sections": [],
+                "explicitly_insufficient": false
+            },
+            "retrieved_evidence": [
+                {
+                    "rank": 1,
+                    "document_type": "synthetic_incident",
+                    "evidence_type": "incident",
+                    "incident_id": "INC-0001",
+                    "procedure_id": null,
+                    "event_type": "machine_overheating",
+                    "severity": "High",
+                    "distance": 0.9103080630302429,
+                    "source": "knowledge_base/docs/synthetic_incidents/INC-0001_machine_overheating.md"
+                },
+                {
+                    "rank": 2,
+                    "document_type": "synthetic_incident",
+                    "evidence_type": "incident",
+                    "incident_id": "INC-0009",
+                    "procedure_id": null,
+                    "event_type": "machine_overheating",
+                    "severity": "High",
+                    "distance": 0.9110499620437622,
+                    "source": "knowledge_base/docs/synthetic_incidents/INC-0009_machine_overheating.md"
+                },
+                {
+                    "rank": 3,
+                    "document_type": "safety_procedure",
+                    "evidence_type": "procedure",
+                    "incident_id": null,
+                    "procedure_id": "FSP-SOP-001",
+                    "event_type": null,
+                    "severity": null,
+                    "distance": 0.957465410232544,
+                    "source": "knowledge_base/docs/safety_procedures/machine_overheating_sop.md"
+                },
+                {
+                    "rank": 4,
+                    "document_type": "safety_procedure",
+                    "evidence_type": "procedure",
+                    "incident_id": null,
+                    "procedure_id": "FSP-SOP-001",
+                    "event_type": null,
+                    "severity": null,
+                    "distance": 1.160407543182373,
+                    "source": "knowledge_base/docs/safety_procedures/machine_overheating_sop.md"
+                }
+            ]
+        },
+        {
+            "test_id": "gas_leakage",
+            "question": "What actions should be taken when a gas leakage is detected?",
+            "event_type": "gas_leakage",
+            "expected_supported": true,
+            "answer": "FACTS  \n- When gas leakage is suspected, the applicable emergency shutdown procedure must be followed (Procedure FSP-SOP-002).  \n- Access to the affected area must be restricted (Procedure FSP-SOP-002).  \n- The atmosphere must be verified as safe before resuming operation (Procedure FSP-SOP-002).  \n- Corrective actions for gas leakage include inspecting the suspected leakage source (INC-0027, INC-0024).  \n\nPOSSIBLE HYPOTHESES  \n- Damaged pipes or hoses (unconfirmed).  \n- Failed seals (unconfirmed).  \n- Loose connections (unconfirmed).  \n- Equipment malfunction (unconfirmed).  \n- Insufficient ventilation (unconfirmed).  \n\nRECOMMENDED ACTIONS  \n1. Follow the applicable emergency shutdown procedure.  \n2. Restrict access to the affected area.  \n3. Inspect the suspected leakage source only when safe.  \n4. Verify the atmosphere is safe before resuming operation.  \n\nEVIDENCE SOURCES  \n- Procedure: FSP-SOP-002 (knowledge_base/docs/safety_procedures/gas_leakage_sop.md).  \n- Incident: INC-0027 (knowledge_base/docs/synthetic_incidents/INC-0027_gas_leakage.md).  \n- Incident: INC-0024 (knowledge_base/docs/synthetic_incidents/INC-0024_gas_leakage.md).  \n\nLIMITATIONS  \n- All evidence is synthetic (marked as \"Synthetic: True\" in sources).  \n- The retrieved evidence does not confirm root causes or provide site-specific procedures.  \n- Recommendations are based on synthetic procedural and incident data, not official safety standards.",
+            "evaluation": {
+                "checks": {
+                    "sections_complete": true,
+                    "citation_grounded": true,
+                    "insufficient_behavior_correct": true,
+                    "synthetic_disclosed": true
+                },
+                "passed_checks": 4,
+                "total_checks": 4,
+                "grounding_score": 1.0,
+                "retrieved_ids": [
+                    "FSP-SOP-002",
+                    "INC-0024",
+                    "INC-0027"
+                ],
+                "cited_ids": [
+                    "FSP-SOP-002",
+                    "INC-0024",
+                    "INC-0027"
+                ],
+                "unsupported_ids": [],
+                "missing_sections": [],
+                "explicitly_insufficient": false
+            },
+            "retrieved_evidence": [
+                {
+                    "rank": 1,
+                    "document_type": "safety_procedure",
+                    "evidence_type": "procedure",
+                    "incident_id": null,
+                    "procedure_id": "FSP-SOP-002",
+                    "event_type": null,
+                    "severity": null,
+                    "distance": 0.9396650791168213,
+                    "source": "knowledge_base/docs/safety_procedures/gas_leakage_sop.md"
+                },
+                {
+                    "rank": 2,
+                    "document_type": "synthetic_incident",
+                    "evidence_type": "incident",
+                    "incident_id": "INC-0027",
+                    "procedure_id": null,
+                    "event_type": "gas_leakage",
+                    "severity": "Critical",
+                    "distance": 0.9452352523803711,
+                    "source": "knowledge_base/docs/synthetic_incidents/INC-0027_gas_leakage.md"
+                },
+                {
+                    "rank": 3,
+                    "document_type": "synthetic_incident",
+                    "evidence_type": "incident",
+                    "incident_id": "INC-0024",
+                    "procedure_id": null,
+                    "event_type": "gas_leakage",
+                    "severity": "Critical",
+                    "distance": 0.9548372626304626,
+                    "source": "knowledge_base/docs/synthetic_incidents/INC-0024_gas_leakage.md"
+                },
+                {
+                    "rank": 4,
+                    "document_type": "safety_procedure",
+                    "evidence_type": "procedure",
+                    "incident_id": null,
+                    "procedure_id": "FSP-SOP-002",
+                    "event_type": null,
+                    "severity": null,
+                    "distance": 1.1771959066390991,
+                    "source": "knowledge_base/docs/safety_procedures/gas_leakage_sop.md"
+                }
+            ]
+        },
+        {
+            "test_id": "vibration",
+            "question": "How should abnormal machine vibration be handled?",
+            "event_type": "vibration_anomaly",
+            "expected_supported": true,
+            "answer": "FACTS  \n- Abnormal machine vibration is detected during operation (INC-0011, INC-0015).  \n- Sensor data includes rotational speed (2779 RPM, INC-0011; 2800 RPM, INC-0015), torque (69.36, INC-0011; 64.55, INC-0015), and tool wear (133, INC-0011; 92, INC-0015).  \n- Possible contributing factors include mechanical imbalance, component wear, and loose connections (FSP-SOP-003, INC-0011, INC-0015).  \n- Corrective actions include inspecting bearings and rotating components, checking shaft alignment, and reducing operation if vibration increases (INC-0011, INC-0015).  \n- Preventive actions recommend periodic vibration inspections, tracking trends, and alignment checks in maintenance (INC-0011, INC-0015).  \n\nPOSSIBLE HYPOTHESES  \n- Mechanical imbalance (INC-0011, INC-0015).  \n- Component wear (FSP-SOP-003, INC-0011, INC-0015).  \n- Loose mechanical components (INC-0011, INC-0015).  \n- Bearing degradation (INC-0011, INC-0015).  \n- Shaft misalignment (INC-0011, INC-0015).  \n\nRECOMMENDED ACTIONS  \n1. Assess machine operating condition and reduce load if safe (FSP-SOP-003).  \n2. Inspect bearings, rotating components, and check shaft alignment (INC-0011, INC-0015).  \n3. Inspect for loose mechanical connections (INC-0011, INC-0015).  \n4. Follow shutdown procedures if vibration persists or worsens (FSP-SOP-003).  \n5. Monitor vibration trends and perform periodic inspections (FSP-SOP-003, INC-0011, INC-0015).  \n\nEVIDENCE SOURCES  \n- Procedure: FSP-SOP-003 (knowledge_base/docs/safety_procedures/machine_vibration_sop.md).  \n- Incident 1: INC-0011 (knowledge_base/docs/synthetic_incidents/INC-0011_vibration_anomaly.md).  \n- Incident 2: INC-0015 (knowledge_base/docs/synthetic_incidents/INC-0015_vibration_anomaly.md).  \n\nLIMITATIONS  \n- All evidence is synthetic (FSP-SOP-003, INC-0011, INC-0015).  \n- No real-world incident data is provided.  \n- Possible contributing factors and root causes remain unconfirmed unless explicitly stated in evidence.",
+            "evaluation": {
+                "checks": {
+                    "sections_complete": true,
+                    "citation_grounded": true,
+                    "insufficient_behavior_correct": true,
+                    "synthetic_disclosed": true
+                },
+                "passed_checks": 4,
+                "total_checks": 4,
+                "grounding_score": 1.0,
+                "retrieved_ids": [
+                    "FSP-SOP-003",
+                    "INC-0011",
+                    "INC-0015"
+                ],
+                "cited_ids": [
+                    "FSP-SOP-003",
+                    "INC-0011",
+                    "INC-0015"
+                ],
+                "unsupported_ids": [],
+                "missing_sections": [],
+                "explicitly_insufficient": false
+            },
+            "retrieved_evidence": [
+                {
+                    "rank": 1,
+                    "document_type": "safety_procedure",
+                    "evidence_type": "procedure",
+                    "incident_id": null,
+                    "procedure_id": "FSP-SOP-003",
+                    "event_type": null,
+                    "severity": null,
+                    "distance": 0.6886959671974182,
+                    "source": "knowledge_base/docs/safety_procedures/machine_vibration_sop.md"
+                },
+                {
+                    "rank": 2,
+                    "document_type": "synthetic_incident",
+                    "evidence_type": "incident",
+                    "incident_id": "INC-0011",
+                    "procedure_id": null,
+                    "event_type": "vibration_anomaly",
+                    "severity": "High",
+                    "distance": 0.9049656391143799,
+                    "source": "knowledge_base/docs/synthetic_incidents/INC-0011_vibration_anomaly.md"
+                },
+                {
+                    "rank": 3,
+                    "document_type": "synthetic_incident",
+                    "evidence_type": "incident",
+                    "incident_id": "INC-0015",
+                    "procedure_id": null,
+                    "event_type": "vibration_anomaly",
+                    "severity": "High",
+                    "distance": 0.9096748232841492,
+                    "source": "knowledge_base/docs/synthetic_incidents/INC-0015_vibration_anomaly.md"
+                },
+                {
+                    "rank": 4,
+                    "document_type": "safety_procedure",
+                    "evidence_type": "procedure",
+                    "incident_id": null,
+                    "procedure_id": "FSP-SOP-003",
+                    "event_type": null,
+                    "severity": null,
+                    "distance": 0.9771983027458191,
+                    "source": "knowledge_base/docs/safety_procedures/machine_vibration_sop.md"
+                }
+            ]
+        },
+        {
+            "test_id": "unsupported_chemical_spill",
+            "question": "What procedure does ForgeShield have for a chemical spill?",
+            "event_type": null,
+            "expected_supported": false,
+            "answer": "FACTS  \n- No incident records or safety procedures in the retrieved evidence specifically address chemical spill protocols.  \n\nPOSSIBLE HYPOTHESES  \n- None identified.  \n\nRECOMMENDED ACTIONS  \n- None applicable.  \n\nEVIDENCE SOURCES  \n- Incident IDs: INC-0054, INC-0060 (slip-fall hazards, unrelated to chemical spills).  \n- Procedure IDs: FSP-SOP-001 (machine overheating), FSP-SOP-002 (gas leakage).  \n\nLIMITATIONS  \n- All retrieved evidence is synthetic and not applicable to real-world scenarios.  \n- No procedure or incident data exists in the provided evidence for chemical spill handling.  \n- The answer cannot be generalized to actual industrial practices.",
+            "evaluation": {
+                "checks": {
+                    "sections_complete": true,
+                    "citation_grounded": true,
+                    "insufficient_behavior_correct": true,
+                    "synthetic_disclosed": true
+                },
+                "passed_checks": 4,
+                "total_checks": 4,
+                "grounding_score": 1.0,
+                "retrieved_ids": [
+                    "FSP-SOP-001",
+                    "FSP-SOP-002",
+                    "INC-0054",
+                    "INC-0060"
+                ],
+                "cited_ids": [
+                    "FSP-SOP-001",
+                    "FSP-SOP-002",
+                    "INC-0054",
+                    "INC-0060"
+                ],
+                "unsupported_ids": [],
+                "missing_sections": [],
+                "explicitly_insufficient": false
+            },
+            "retrieved_evidence": [
+                {
+                    "rank": 1,
+                    "document_type": "synthetic_incident",
+                    "evidence_type": "incident",
+                    "incident_id": "INC-0054",
+                    "procedure_id": null,
+                    "event_type": "slip_fall_hazard",
+                    "severity": "High",
+                    "distance": 0.9708551168441772,
+                    "source": "knowledge_base/docs/synthetic_incidents/INC-0054_slip_fall_hazard.md"
+                },
+                {
+                    "rank": 2,
+                    "document_type": "synthetic_incident",
+                    "evidence_type": "incident",
+                    "incident_id": "INC-0060",
+                    "procedure_id": null,
+                    "event_type": "slip_fall_hazard",
+                    "severity": "High",
+                    "distance": 0.9811034798622131,
+                    "source": "knowledge_base/docs/synthetic_incidents/INC-0060_slip_fall_hazard.md"
+                },
+                {
+                    "rank": 3,
+                    "document_type": "safety_procedure",
+                    "evidence_type": "procedure",
+                    "incident_id": null,
+                    "procedure_id": "FSP-SOP-001",
+                    "event_type": null,
+                    "severity": null,
+                    "distance": 1.0776193141937256,
+                    "source": "knowledge_base/docs/safety_procedures/machine_overheating_sop.md"
+                },
+                {
+                    "rank": 4,
+                    "document_type": "safety_procedure",
+                    "evidence_type": "procedure",
+                    "incident_id": null,
+                    "procedure_id": "FSP-SOP-002",
+                    "event_type": null,
+                    "severity": null,
+                    "distance": 1.1047649383544922,
+                    "source": "knowledge_base/docs/safety_procedures/gas_leakage_sop.md"
+                }
+            ]
+        }
+    ]
+}

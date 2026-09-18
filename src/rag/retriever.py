@@ -13,25 +13,23 @@ VECTOR_DB_DIR = (
     / "chroma_db"
 )
 
-COLLECTION_NAME = (
-    "forgeshield_knowledge"
-)
+COLLECTION_NAME = "forgeshield_knowledge"
 
-EMBEDDING_MODEL = (
-    "all-MiniLM-L6-v2"
-)
+EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
 
 class ForgeShieldRetriever:
     """
     Evidence retrieval interface for ForgeShield.
 
-    The retriever returns source documents and metadata
-    from the persistent ChromaDB knowledge base.
+    Retrieves evidence from two main document classes:
 
-    It does not generate answers. Generation is deliberately
-    kept separate so that retrieved evidence can be inspected
-    before an LLM produces an explanation.
+    1. Synthetic incident records
+    2. Synthetic safety procedures
+
+    Generation is deliberately kept separate from retrieval so
+    that retrieved evidence can be inspected before an LLM
+    generates an answer.
     """
 
     def __init__(
@@ -42,41 +40,24 @@ class ForgeShieldRetriever:
     ):
 
         if db_path is None:
-
             db_path = VECTOR_DB_DIR
 
-        self.db_path = Path(
-            db_path
+        self.db_path = Path(db_path)
+
+        self.collection_name = collection_name
+
+        self.embedding_model_name = embedding_model
+
+        print("Loading embedding model...")
+
+        self.embedding_model = SentenceTransformer(
+            self.embedding_model_name
         )
 
-        self.collection_name = (
-            collection_name
-        )
+        print("Connecting to ChromaDB...")
 
-        self.embedding_model_name = (
-            embedding_model
-        )
-
-        print(
-            "Loading embedding model..."
-        )
-
-        self.embedding_model = (
-            SentenceTransformer(
-                self.embedding_model_name
-            )
-        )
-
-        print(
-            "Connecting to ChromaDB..."
-        )
-
-        self.client = (
-            chromadb.PersistentClient(
-                path=str(
-                    self.db_path
-                )
-            )
+        self.client = chromadb.PersistentClient(
+            path=str(self.db_path)
         )
 
         try:
@@ -111,14 +92,20 @@ class ForgeShieldRetriever:
         top_k: int = 5,
         event_type: str | None = None,
         severity: str | None = None,
+        document_type: str | None = None,
+        evidence_type: str | None = None,
         synthetic_only: bool = True,
     ) -> list[dict[str, Any]]:
         """
-        Retrieve the most semantically relevant evidence.
+        Retrieve semantically relevant evidence.
 
-        Optional metadata filters allow downstream modules
-        to restrict retrieval to particular event types
-        or severity levels.
+        Optional metadata filters can restrict retrieval to:
+
+        - event type
+        - severity
+        - document type
+        - evidence type
+        - synthetic/non-synthetic documents
         """
 
         query = query.strip()
@@ -135,9 +122,6 @@ class ForgeShieldRetriever:
                 "top_k must be at least 1."
             )
 
-        # Prevent requesting more records than
-        # are actually present.
-
         top_k = min(
             top_k,
             self.collection.count(),
@@ -149,6 +133,10 @@ class ForgeShieldRetriever:
                 normalize_embeddings=True,
             )
         )
+
+        # -----------------------------------------------------
+        # Build metadata filters
+        # -----------------------------------------------------
 
         where_conditions = []
 
@@ -164,8 +152,7 @@ class ForgeShieldRetriever:
 
             where_conditions.append(
                 {
-                    "event_type":
-                        event_type
+                    "event_type": event_type
                 }
             )
 
@@ -173,10 +160,29 @@ class ForgeShieldRetriever:
 
             where_conditions.append(
                 {
-                    "severity":
-                        severity
+                    "severity": severity
                 }
             )
+
+        if document_type is not None:
+
+            where_conditions.append(
+                {
+                    "document_type": document_type
+                }
+            )
+
+        if evidence_type is not None:
+
+            where_conditions.append(
+                {
+                    "evidence_type": evidence_type
+                }
+            )
+
+        # -----------------------------------------------------
+        # Construct Chroma where clause
+        # -----------------------------------------------------
 
         where = None
 
@@ -187,8 +193,7 @@ class ForgeShieldRetriever:
         elif len(where_conditions) > 1:
 
             where = {
-                "$and":
-                    where_conditions
+                "$and": where_conditions
             }
 
         query_kwargs = {
@@ -201,9 +206,7 @@ class ForgeShieldRetriever:
 
         if where is not None:
 
-            query_kwargs[
-                "where"
-            ] = where
+            query_kwargs["where"] = where
 
         results = (
             self.collection.query(
@@ -239,9 +242,7 @@ class ForgeShieldRetriever:
 
             metadata = {}
 
-            if index < len(
-                metadatas
-            ):
+            if index < len(metadatas):
 
                 metadata = (
                     metadatas[index]
@@ -250,9 +251,7 @@ class ForgeShieldRetriever:
 
             distance = None
 
-            if index < len(
-                distances
-            ):
+            if index < len(distances):
 
                 distance = float(
                     distances[index]
@@ -286,9 +285,24 @@ class ForgeShieldRetriever:
                             "source"
                         ),
 
+                    "document_type":
+                        metadata.get(
+                            "document_type"
+                        ),
+
+                    "evidence_type":
+                        metadata.get(
+                            "evidence_type"
+                        ),
+
                     "incident_id":
                         metadata.get(
                             "incident_id"
+                        ),
+
+                    "procedure_id":
+                        metadata.get(
+                            "procedure_id"
                         ),
 
                     "machine_id":
@@ -321,11 +335,12 @@ class ForgeShieldRetriever:
         results: list[dict[str, Any]],
     ) -> str:
         """
-        Format retrieved records into an evidence block
-        suitable for an LLM prompt.
+        Format retrieved records into a structured evidence
+        block suitable for an LLM prompt.
 
-        Source metadata is explicitly retained so the
-        generation layer can cite where the evidence came from.
+        Both incident and procedure evidence are explicitly
+        identified so the generation layer can distinguish
+        observed events from procedural guidance.
         """
 
         if not results:
@@ -348,19 +363,34 @@ class ForgeShieldRetriever:
                 "Unknown source",
             )
 
+            document_type = metadata.get(
+                "document_type",
+                "Unknown document type",
+            )
+
+            evidence_type = metadata.get(
+                "evidence_type",
+                "Unknown evidence type",
+            )
+
             incident_id = metadata.get(
                 "incident_id",
-                "Unknown incident",
+                "Not applicable",
+            )
+
+            procedure_id = metadata.get(
+                "procedure_id",
+                "Not applicable",
             )
 
             event_type = metadata.get(
                 "event_type",
-                "Unknown event",
+                "Not specified",
             )
 
             severity = metadata.get(
                 "severity",
-                "Unknown severity",
+                "Not specified",
             )
 
             synthetic = metadata.get(
@@ -368,26 +398,34 @@ class ForgeShieldRetriever:
                 True,
             )
 
+            distance = result.get(
+                "distance"
+            )
+
+            distance_text = (
+                f"{distance:.4f}"
+                if distance is not None
+                else "N/A"
+            )
+
             section = (
                 f"[Evidence {result['rank']}]\n"
                 f"Source: {source}\n"
+                f"Document Type: {document_type}\n"
+                f"Evidence Type: {evidence_type}\n"
                 f"Incident ID: {incident_id}\n"
+                f"Procedure ID: {procedure_id}\n"
                 f"Event Type: {event_type}\n"
                 f"Severity: {severity}\n"
                 f"Synthetic Record: {synthetic}\n"
-                f"Retrieval Distance: "
-                f"{result['distance']:.4f}\n"
+                f"Retrieval Distance: {distance_text}\n"
                 f"Content:\n"
                 f"{result['text']}"
             )
 
-            sections.append(
-                section
-            )
+            sections.append(section)
 
-        return "\n\n".join(
-            sections
-        )
+        return "\n\n".join(sections)
 
 
 def print_results(
@@ -427,18 +465,38 @@ def print_results(
         )
 
         print(
+            f"    Document Type: "
+            f"{result['document_type']}"
+        )
+
+        print(
+            f"    Evidence Type: "
+            f"{result['evidence_type']}"
+        )
+
+        print(
             f"    Incident: "
-            f"{result['incident_id']}"
+            f"{result['incident_id'] or '-'}"
+        )
+
+        print(
+            f"    Procedure: "
+            f"{result['procedure_id'] or '-'}"
         )
 
         print(
             f"    Event: "
-            f"{result['event_type']}"
+            f"{result['event_type'] or '-'}"
         )
 
         print(
             f"    Severity: "
-            f"{result['severity']}"
+            f"{result['severity'] or '-'}"
+        )
+
+        print(
+            f"    Synthetic: "
+            f"{result['is_synthetic']}"
         )
 
         print(
@@ -465,7 +523,9 @@ def print_results(
 
 def main():
 
-    print("\n" + "=" * 70)
+    print(
+        "\n" + "=" * 70
+    )
 
     print(
         "FORGESHIELD | RETRIEVAL ENGINE"
@@ -473,12 +533,10 @@ def main():
 
     print("=" * 70)
 
-    retriever = (
-        ForgeShieldRetriever()
-    )
+    retriever = ForgeShieldRetriever()
 
     # ---------------------------------------------------------
-    # Test 1: semantic retrieval
+    # Test 1: General semantic retrieval
     # ---------------------------------------------------------
 
     query_1 = (
@@ -497,17 +555,18 @@ def main():
     )
 
     # ---------------------------------------------------------
-    # Test 2: vibration-related retrieval
+    # Test 2: Procedure-only retrieval
     # ---------------------------------------------------------
 
     query_2 = (
-        "How should abnormal machine "
-        "vibration be handled?"
+        "What procedure should be followed "
+        "when a machine is overheating?"
     )
 
     results_2 = retriever.retrieve(
         query=query_2,
         top_k=3,
+        document_type="safety_procedure",
     )
 
     print_results(
@@ -516,23 +575,43 @@ def main():
     )
 
     # ---------------------------------------------------------
-    # Test 3: metadata-filtered retrieval
+    # Test 3: Incident-only retrieval
     # ---------------------------------------------------------
 
     query_3 = (
-        "What corrective actions are "
-        "recommended?"
+        "What incidents have involved "
+        "machine overheating?"
     )
 
     results_3 = retriever.retrieve(
         query=query_3,
         top_k=3,
-        event_type="gas_leakage",
+        document_type="synthetic_incident",
     )
 
     print_results(
         query_3,
         results_3,
+    )
+
+    # ---------------------------------------------------------
+    # Test 4: Event-filtered retrieval
+    # ---------------------------------------------------------
+
+    query_4 = (
+        "What corrective actions are "
+        "recommended?"
+    )
+
+    results_4 = retriever.retrieve(
+        query=query_4,
+        top_k=3,
+        event_type="gas_leakage",
+    )
+
+    print_results(
+        query_4,
+        results_4,
     )
 
     # ---------------------------------------------------------
@@ -553,13 +632,11 @@ def main():
 
     evidence = (
         retriever.format_evidence(
-            results_1[:2]
+            results_1[:3]
         )
     )
 
-    print(
-        evidence
-    )
+    print(evidence)
 
     # ---------------------------------------------------------
     # Completion

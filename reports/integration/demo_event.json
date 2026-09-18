@@ -1,0 +1,22 @@
+{
+    "machine_id": "4343",
+    "event_type": "heat_dissipation_failure",
+    "risk_score": 0.960131,
+    "risk_band": "Critical",
+    "failure_probability": 0.999465,
+    "anomaly_score": 0.901129,
+    "air_temperature": 301.7,
+    "process_temperature": 309.8,
+    "rotational_speed": 1284.0,
+    "torque": 68.2,
+    "tool_wear": 111.0,
+    "temperature_differential": 8.1,
+    "mechanical_power": 9170.183292,
+    "product_type": "M",
+    "TWF": 0,
+    "HDF": 1,
+    "PWF": 1,
+    "OSF": 0,
+    "RNF": 0,
+    "actual_failure": 1
+}
