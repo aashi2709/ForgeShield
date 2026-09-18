@@ -66,6 +66,10 @@ from dashboard.views.predictive_health import (
     render_predictive_health as _render_predictive_health,
 )  # noqa: E402
 
+from dashboard.views.anomaly_detection import (
+    render_anomaly_detection as _render_anomaly_detection,
+)  # noqa: E402
+
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -161,9 +165,11 @@ apply_search = _apply_search
 # UI helpers
 # ---------------------------------------------------------------------------
 
+
 # ---------------------------------------------------------------------------
 # Charts
 # ---------------------------------------------------------------------------
+
 
 # ---------------------------------------------------------------------------
 # Tables / rail
@@ -178,6 +184,7 @@ render_alerts = _render_alerts
 # ---------------------------------------------------------------------------
 # Sidebar
 # ---------------------------------------------------------------------------
+
 
 # ---------------------------------------------------------------------------
 # Command Center
@@ -202,6 +209,7 @@ _format_sensor = __import__(
 
 render_machine_intelligence = _render_machine_intelligence
 render_predictive_health = _render_predictive_health
+render_anomaly_detection = _render_anomaly_detection
 
 
 # ---------------------------------------------------------------------------
@@ -222,44 +230,48 @@ def render_secondary_page(
         render_predictive_health()
         return
 
+    if selected_page == "Anomaly Detection":
+        render_anomaly_detection()
+        return
+
     page_descriptions = {
         "Predictive Health": (
             "Predictive Health",
-            "C-MAPSS-based remaining useful life and degradation analysis."
+            "C-MAPSS-based remaining useful life and degradation analysis.",
         ),
         "Anomaly Detection": (
             "Anomaly Detection",
-            "Unsupervised detection and reconstruction-based anomaly analysis."
+            "Unsupervised detection and reconstruction-based anomaly analysis.",
         ),
         "Explainability": (
             "Explainability",
-            "SHAP-based evidence showing which features influence failure predictions."
+            "SHAP-based evidence showing which features influence failure predictions.",
         ),
         "Incident Intelligence": (
             "Incident Intelligence",
-            "Evidence-grounded incident reports generated from integrated risk events."
+            "Evidence-grounded incident reports generated from integrated risk events.",
         ),
         "Safety Copilot": (
             "Safety Copilot",
-            "Retrieval-grounded safety assistance using the ForgeShield knowledge base."
+            "Retrieval-grounded safety assistance using the ForgeShield knowledge base.",
         ),
         "Knowledge Base": (
             "Knowledge Base",
-            "Safety procedures, incident records, and retrieval evidence."
+            "Safety procedures, incident records, and retrieval evidence.",
         ),
         "Documentation": (
             "Documentation",
-            "Research methodology, datasets, models, and proof-of-concept notes."
+            "Research methodology, datasets, models, and proof-of-concept notes.",
         ),
         "Settings": (
             "Settings",
-            "Dashboard configuration and research proof-of-concept information."
+            "Dashboard configuration and research proof-of-concept information.",
         ),
     }
 
     title, description = page_descriptions.get(
         selected_page,
-        (selected_page, "ForgeShield module.")
+        (selected_page, "ForgeShield module."),
     )
 
     render_html(
