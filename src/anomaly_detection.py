@@ -434,11 +434,11 @@ def main():
         )
 
         labels = kmeans.fit_predict(
-            X_test
+            X_train
         )
 
         score = silhouette_score(
-            X_test,
+            X_train,
             labels,
         )
 
@@ -477,8 +477,12 @@ def main():
         n_init=10,
     )
 
+    kmeans.fit(
+        X_train
+    )
+
     kmeans_labels = (
-        kmeans.fit_predict(
+        kmeans.predict(
             X_test
         )
     )
@@ -521,15 +525,15 @@ def main():
 
     dbscan_labels = (
         dbscan.fit_predict(
-            X_test
+            X_train
         )
     )
 
     dbscan_results = evaluate_clustering(
         "DBSCAN",
         dbscan_labels,
-        X_test,
-        y_test,
+        X_train,
+        y_train,
     )
 
     joblib.dump(
@@ -559,7 +563,7 @@ def main():
 
     agglomerative_labels = (
         agglomerative.fit_predict(
-            X_test
+            X_train
         )
     )
 
@@ -567,8 +571,8 @@ def main():
         evaluate_clustering(
             "Agglomerative",
             agglomerative_labels,
-            X_test,
-            y_test,
+            X_train,
+            y_train,
         )
     )
 
@@ -630,7 +634,11 @@ def main():
         random_state=RANDOM_STATE,
     )
 
-    X_pca = pca.fit_transform(
+    pca.fit(
+        X_train
+    )
+
+    X_pca = pca.transform(
         X_test
     )
 
