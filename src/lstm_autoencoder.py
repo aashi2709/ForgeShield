@@ -337,7 +337,7 @@ def find_threshold(
 
     # Threshold candidates are based on
     # reconstruction-error distribution
-    # of healthy validation windows.
+    # of healthy training windows.
 
     percentiles = np.arange(
         90,
