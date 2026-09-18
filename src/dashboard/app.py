@@ -26,6 +26,9 @@ from dashboard.components.data import (
     load_demo_event as _load_demo_event,
     load_incident_report as _load_incident_report,
     load_validation as _load_validation,
+    prepare_data as _prepare_data,
+    filter_dataset as _filter_dataset,
+    apply_search as _apply_search,
 )  # noqa: E402
 
 from dashboard.components.ui import (
@@ -51,11 +54,11 @@ from dashboard.components.overview import (
     render_alerts as _render_alerts,
 )  # noqa: E402
 
-from dashboard.pages.command_center import (
+from dashboard.views.command_center import (
     render_command_center as _render_command_center,
 )  # noqa: E402
 
-from dashboard.pages.machine_intelligence import (
+from dashboard.views.machine_intelligence import (
     render_machine_intelligence as _render_machine_intelligence,
 )  # noqa: E402
 
@@ -78,39 +81,6 @@ TEST_METADATA_PATH = (
     / "ai4i"
     / "test_metadata.csv"
 )
-
-
-# ---------------------------------------------------------------------------
-# Design tokens
-# ---------------------------------------------------------------------------
-
-BG = "#0A0C10"
-SURFACE = "#12151A"
-SURFACE_2 = "#151920"
-BORDER = "#1C2028"
-BORDER_STRONG = "#292F38"
-
-TEXT = "#E7E9EC"
-MUTED = "#868D97"
-MUTED_2 = "#646B75"
-
-BRAND = "#FF6B35"
-
-CRITICAL = "#EF4B5C"
-HIGH = "#F0A63C"
-MEDIUM = "#E8C547"
-LOW = "#38C98F"
-
-RISK_COLORS = {
-    "Low": LOW,
-    "Medium": MEDIUM,
-    "High": HIGH,
-    "Critical": CRITICAL,
-}
-
-PAGE_RADIUS = "8px"
-PANEL_RADIUS = "10px"
-SMALL_RADIUS = "4px"
 
 
 # ---------------------------------------------------------------------------
@@ -178,191 +148,9 @@ def load_validation() -> dict:
 # Data preparation
 # ---------------------------------------------------------------------------
 
-def prepare_data(
-    risk_df: pd.DataFrame,
-    metadata_df: pd.DataFrame,
-) -> pd.DataFrame:
-
-    df = risk_df.copy()
-
-    if not metadata_df.empty:
-        metadata = metadata_df.copy()
-
-        if len(metadata) == len(df):
-            preferred = [
-                "UID",
-                "Type",
-                "Air temperature",
-                "Process temperature",
-                "Rotational speed",
-                "Torque",
-                "Tool wear",
-                "Machine failure",
-                "TWF",
-                "HDF",
-                "PWF",
-                "OSF",
-                "RNF",
-            ]
-
-            available = [
-                column
-                for column in preferred
-                if column in metadata.columns
-            ]
-
-            metadata = metadata[available].copy()
-
-            # The risk table can already contain a few raw columns such as
-            # UID or Type. Remove overlapping columns before concatenating so
-            # pandas does not create duplicate column names. Duplicate names
-            # would make df["Air temperature"] return a DataFrame instead of
-            # a Series and cause pd.to_numeric() to fail.
-            overlapping = [
-                column
-                for column in metadata.columns
-                if column in df.columns
-            ]
-            if overlapping:
-                df = df.drop(columns=overlapping)
-
-            df = pd.concat(
-                [
-                    metadata.reset_index(drop=True),
-                    df.reset_index(drop=True),
-                ],
-                axis=1,
-            )
-
-            # Reconstruct engineered features from the original AI4I
-            # measurements for the Machine Intelligence view. The risk table
-            # contains model outputs, while test_metadata contains the raw
-            # held-out observation.
-            if (
-                "Air temperature" in df.columns
-                and "Process temperature" in df.columns
-            ):
-                air_temperature = pd.to_numeric(
-                    df["Air temperature"], errors="coerce"
-                )
-                process_temperature = pd.to_numeric(
-                    df["Process temperature"], errors="coerce"
-                )
-                df["Temperature Differential"] = (
-                    process_temperature - air_temperature
-                )
-
-            if (
-                "Rotational speed" in df.columns
-                and "Torque" in df.columns
-            ):
-                rotational_speed = pd.to_numeric(
-                    df["Rotational speed"], errors="coerce"
-                )
-                torque = pd.to_numeric(
-                    df["Torque"], errors="coerce"
-                )
-                df["Mechanical Power"] = (
-                    rotational_speed * torque * (2.0 * np.pi / 60.0)
-                )
-
-    if "UID" not in df.columns:
-        df.insert(
-            0,
-            "UID",
-            np.arange(1, len(df) + 1),
-        )
-
-    df["Machine ID"] = (
-        df["UID"]
-        .astype(str)
-        .str.replace(".0", "", regex=False)
-    )
-
-    df["failure_probability"] = pd.to_numeric(
-        df["failure_probability"],
-        errors="coerce",
-    )
-
-    df["anomaly_score"] = pd.to_numeric(
-        df["anomaly_score"],
-        errors="coerce",
-    )
-
-    df["unified_risk_score"] = pd.to_numeric(
-        df["unified_risk_score"],
-        errors="coerce",
-    )
-
-    df["actual_failure"] = pd.to_numeric(
-        df["actual_failure"],
-        errors="coerce",
-    ).fillna(0).astype(int)
-
-    return df
-
-
-def filter_dataset(
-    df: pd.DataFrame,
-    dataset_view: str,
-) -> pd.DataFrame:
-
-    if dataset_view == "Top 250":
-        return (
-            df.sort_values(
-                "unified_risk_score",
-                ascending=False,
-            )
-            .head(250)
-            .copy()
-        )
-
-    return df.copy()
-
-
-def apply_search(
-    df: pd.DataFrame,
-    query: str,
-) -> pd.DataFrame:
-
-    query = query.strip()
-
-    if not query:
-        return df
-
-    mask = (
-        df["Machine ID"]
-        .astype(str)
-        .str.contains(
-            query,
-            case=False,
-            na=False,
-        )
-    )
-
-    if "Type" in df.columns:
-        mask = mask | (
-            df["Type"]
-            .astype(str)
-            .str.contains(
-                query,
-                case=False,
-                na=False,
-            )
-        )
-
-    if "risk_band" in df.columns:
-        mask = mask | (
-            df["risk_band"]
-            .astype(str)
-            .str.contains(
-                query,
-                case=False,
-                na=False,
-            )
-        )
-
-    return df[mask].copy()
+prepare_data = _prepare_data
+filter_dataset = _filter_dataset
+apply_search = _apply_search
 
 
 # ---------------------------------------------------------------------------
@@ -399,12 +187,12 @@ render_command_center = _render_command_center
 # ---------------------------------------------------------------------------
 
 _safe_float = __import__(
-    "dashboard.pages.machine_intelligence",
+    "dashboard.views.machine_intelligence",
     fromlist=["_safe_float"],
 )._safe_float
 
 _format_sensor = __import__(
-    "dashboard.pages.machine_intelligence",
+    "dashboard.views.machine_intelligence",
     fromlist=["_format_sensor"],
 )._format_sensor
 
