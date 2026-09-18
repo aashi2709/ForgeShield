@@ -11,14 +11,11 @@ from dashboard.components.ui import render_html
 
 
 def render_sidebar() -> str:
-    """Render all navigation chrome inside the actual Streamlit sidebar.
-
-    Keeping the entire block inside ``with st.sidebar`` is important: custom
-    HTML must never fall back into the main Command Center column.
-    """
+    """Render all navigation chrome inside the actual Streamlit sidebar."""
 
     navigation = [
         "Command Center",
+        "Live Monitoring",
         "Machine Intelligence",
         "Predictive Health",
         "Anomaly Detection",
@@ -31,12 +28,13 @@ def render_sidebar() -> str:
     ]
 
     with st.sidebar:
+
         render_html(
             f"""
             <div style="
-                padding: 28px 0 25px;
-                border-bottom: 1px solid {BORDER};
-                margin-bottom: 23px;
+                padding:28px 0 25px;
+                border-bottom:1px solid {BORDER};
+                margin-bottom:23px;
             ">
                 <div style="
                     display:flex;
@@ -113,29 +111,88 @@ def render_sidebar() -> str:
                 </div>
 
                 <div style="display:grid;gap:12px;">
+
                     <div>
-                        <div style="display:flex;align-items:center;gap:8px;color:#8B929C;font-size:11px;">
-                            <span style="width:6px;height:6px;border-radius:50%;background:{LOW};"></span>
+                        <div style="
+                            display:flex;
+                            align-items:center;
+                            gap:8px;
+                            color:#8B929C;
+                            font-size:11px;
+                        ">
+                            <span style="
+                                width:6px;
+                                height:6px;
+                                border-radius:50%;
+                                background:{LOW};
+                            "></span>
                             AI4I + C-MAPSS
                         </div>
-                        <div style="color:{LOW};font-family:'JetBrains Mono',monospace;font-size:9px;margin:3px 0 0 14px;">Online</div>
+
+                        <div style="
+                            color:{LOW};
+                            font-family:'JetBrains Mono',monospace;
+                            font-size:9px;
+                            margin:3px 0 0 14px;
+                        ">
+                            Online
+                        </div>
                     </div>
 
                     <div>
-                        <div style="display:flex;align-items:center;gap:8px;color:#8B929C;font-size:11px;">
-                            <span style="width:6px;height:6px;border-radius:50%;background:{LOW};"></span>
+                        <div style="
+                            display:flex;
+                            align-items:center;
+                            gap:8px;
+                            color:#8B929C;
+                            font-size:11px;
+                        ">
+                            <span style="
+                                width:6px;
+                                height:6px;
+                                border-radius:50%;
+                                background:{LOW};
+                            "></span>
                             RAG Knowledge Base
                         </div>
-                        <div style="color:{LOW};font-family:'JetBrains Mono',monospace;font-size:9px;margin:3px 0 0 14px;">Online</div>
+
+                        <div style="
+                            color:{LOW};
+                            font-family:'JetBrains Mono',monospace;
+                            font-size:9px;
+                            margin:3px 0 0 14px;
+                        ">
+                            Online
+                        </div>
                     </div>
 
                     <div>
-                        <div style="display:flex;align-items:center;gap:8px;color:#8B929C;font-size:11px;">
-                            <span style="width:6px;height:6px;border-radius:50%;background:{LOW};"></span>
+                        <div style="
+                            display:flex;
+                            align-items:center;
+                            gap:8px;
+                            color:#8B929C;
+                            font-size:11px;
+                        ">
+                            <span style="
+                                width:6px;
+                                height:6px;
+                                border-radius:50%;
+                                background:{LOW};
+                            "></span>
                             Local LLM (Ollama)
                         </div>
-                        <div style="color:{LOW};font-family:'JetBrains Mono',monospace;font-size:9px;margin:3px 0 0 14px;">Online</div>
+
+                        <div style="
+                            color:{LOW};
+                            font-family:'JetBrains Mono',monospace;
+                            font-size:9px;
+                            margin:3px 0 0 14px;
+                        ">
+                            Online
+                        </div>
                     </div>
+
                 </div>
             </div>
 

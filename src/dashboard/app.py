@@ -54,6 +54,10 @@ from dashboard.components.overview import (
     render_alerts as _render_alerts,
 )  # noqa: E402
 
+from dashboard.views.live_monitoring import (
+    render_live_monitoring,
+)
+
 from dashboard.views.command_center import (
     render_command_center as _render_command_center,
 )  # noqa: E402
@@ -237,6 +241,10 @@ def render_secondary_page(
     event: dict,
     report: str,
 ) -> None:
+
+    if selected_page == "Live Monitoring":
+        render_live_monitoring()
+        return
 
     if selected_page == "Machine Intelligence":
         render_machine_intelligence(df)

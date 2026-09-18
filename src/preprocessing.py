@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import joblib
 import numpy as np
 import pandas as pd
 
@@ -66,28 +67,62 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     return data
 
 
-def clip_outliers(
+def calculate_iqr_bounds(
     train_df: pd.DataFrame,
-    test_df: pd.DataFrame,
     columns: list[str],
-) -> tuple[pd.DataFrame, pd.DataFrame]:
+) -> dict[str, tuple[float, float]]:
 
-    train = train_df.copy()
-    test = test_df.copy()
+    bounds = {}
 
     for column in columns:
-        q1 = train[column].quantile(0.25)
-        q3 = train[column].quantile(0.75)
+        q1 = train_df[column].quantile(0.25)
+        q3 = train_df[column].quantile(0.75)
 
         iqr = q3 - q1
 
         lower = q1 - 1.5 * iqr
         upper = q3 + 1.5 * iqr
 
-        train[column] = train[column].clip(lower, upper)
-        test[column] = test[column].clip(lower, upper)
+        bounds[column] = (lower, upper)
 
-    return train, test
+    return bounds
+
+
+def clip_outliers(
+    train_df: pd.DataFrame,
+    test_df: pd.DataFrame,
+    columns: list[str],
+    bounds: dict[str, tuple[float, float]] | None = None,
+) -> tuple[
+    pd.DataFrame,
+    pd.DataFrame,
+    dict[str, tuple[float, float]],
+]:
+
+    train = train_df.copy()
+    test = test_df.copy()
+
+    if bounds is None:
+        bounds = calculate_iqr_bounds(
+            train,
+            columns,
+        )
+
+    for column in columns:
+
+        lower, upper = bounds[column]
+
+        train[column] = train[column].clip(
+            lower,
+            upper,
+        )
+
+        test[column] = test[column].clip(
+            lower,
+            upper,
+        )
+
+    return train, test, bounds
 
 
 def run_preprocessing() -> None:
@@ -96,11 +131,16 @@ def run_preprocessing() -> None:
     print("FORGESHIELD | AI4I PREPROCESSING")
     print("=" * 60)
 
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    OUTPUT_DIR.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
     df = load_data()
 
-    print(f"\nOriginal dataset shape: {df.shape}")
+    print(
+        f"\nOriginal dataset shape: {df.shape}"
+    )
 
     # ---------------------------------------------------------
     # Feature engineering
@@ -112,33 +152,55 @@ def run_preprocessing() -> None:
     # Select modeling variables
     # ---------------------------------------------------------
 
-    X = df[NUMERICAL_FEATURES + CATEGORICAL_FEATURES].copy()
+    X = df[
+        NUMERICAL_FEATURES
+        + CATEGORICAL_FEATURES
+    ].copy()
+
     y = df[TARGET].copy()
 
-    print(f"Feature matrix shape before encoding: {X.shape}")
-    print(f"Target shape: {y.shape}")
+    print(
+        f"Feature matrix shape before encoding: "
+        f"{X.shape}"
+    )
+
+    print(
+        f"Target shape: {y.shape}"
+    )
 
     # ---------------------------------------------------------
     # Train/test split
     # ---------------------------------------------------------
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X,
-        y,
-        test_size=TEST_SIZE,
-        random_state=RANDOM_STATE,
-        stratify=y,
+    X_train, X_test, y_train, y_test = (
+        train_test_split(
+            X,
+            y,
+            test_size=TEST_SIZE,
+            random_state=RANDOM_STATE,
+            stratify=y,
+        )
     )
 
-    print(f"\nTraining samples: {len(X_train)}")
-    print(f"Testing samples: {len(X_test)}")
+    print(
+        f"\nTraining samples: {len(X_train)}"
+    )
+
+    print(
+        f"Testing samples: {len(X_test)}"
+    )
 
     # ---------------------------------------------------------
     # Outlier clipping
-    # Learn thresholds ONLY from training data
+    #
+    # Thresholds are learned ONLY from training data.
     # ---------------------------------------------------------
 
-    X_train, X_test = clip_outliers(
+    (
+        X_train,
+        X_test,
+        clipping_bounds,
+    ) = clip_outliers(
         X_train,
         X_test,
         NUMERICAL_FEATURES,
@@ -146,7 +208,8 @@ def run_preprocessing() -> None:
 
     # ---------------------------------------------------------
     # Standardize numerical features
-    # Fit scaler ONLY on training data
+    #
+    # Scaler is fitted ONLY on training data.
     # ---------------------------------------------------------
 
     scaler = StandardScaler()
@@ -161,7 +224,8 @@ def run_preprocessing() -> None:
 
     # ---------------------------------------------------------
     # One-hot encode Type
-    # Fit encoder ONLY on training data
+    #
+    # Encoder is fitted ONLY on training data.
     # ---------------------------------------------------------
 
     encoder = OneHotEncoder(
@@ -177,22 +241,35 @@ def run_preprocessing() -> None:
         X_test[CATEGORICAL_FEATURES]
     )
 
-    type_feature_names = encoder.get_feature_names_out(
-        CATEGORICAL_FEATURES
-    ).tolist()
+    type_feature_names = (
+        encoder
+        .get_feature_names_out(
+            CATEGORICAL_FEATURES
+        )
+        .tolist()
+    )
 
     # ---------------------------------------------------------
     # Combine numerical + categorical features
     # ---------------------------------------------------------
 
-    FEATURES = NUMERICAL_FEATURES + type_feature_names
+    FEATURES = (
+        NUMERICAL_FEATURES
+        + type_feature_names
+    )
 
     X_train_final = np.hstack(
-        [X_train_numeric, X_train_type]
+        [
+            X_train_numeric,
+            X_train_type,
+        ]
     )
 
     X_test_final = np.hstack(
-        [X_test_numeric, X_test_type]
+        [
+            X_test_numeric,
+            X_test_type,
+        ]
     )
 
     X_train_final = pd.DataFrame(
@@ -207,13 +284,63 @@ def run_preprocessing() -> None:
         index=X_test.index,
     )
 
-    print(f"\nFinal feature matrix shape: {X_train_final.shape}")
+    print(
+        f"\nFinal feature matrix shape: "
+        f"{X_train_final.shape}"
+    )
+
     print("\nFinal features:")
 
     for feature in FEATURES:
         print(f"  ✓ {feature}")
 
-     #-------------------------------------------------------
+    # ---------------------------------------------------------
+    # Save preprocessing artifacts
+    #
+    # These are required to make live inference use the
+    # EXACT same preprocessing pipeline as model training.
+    # ---------------------------------------------------------
+
+    preprocessing_artifacts = {
+        "numerical_features": NUMERICAL_FEATURES,
+        "categorical_features": CATEGORICAL_FEATURES,
+        "feature_columns": FEATURES,
+        "clipping_bounds": clipping_bounds,
+        "random_state": RANDOM_STATE,
+        "test_size": TEST_SIZE,
+    }
+
+    joblib.dump(
+        scaler,
+        OUTPUT_DIR / "scaler.joblib",
+    )
+
+    joblib.dump(
+        encoder,
+        OUTPUT_DIR / "encoder.joblib",
+    )
+
+    joblib.dump(
+        preprocessing_artifacts,
+        OUTPUT_DIR / "preprocessing_metadata.joblib",
+    )
+
+    print("\nSaved preprocessing artifacts:")
+
+    print(
+        "  ✓ data/processed/ai4i/scaler.joblib"
+    )
+
+    print(
+        "  ✓ data/processed/ai4i/encoder.joblib"
+    )
+
+    print(
+        "  ✓ data/processed/ai4i/"
+        "preprocessing_metadata.joblib"
+    )
+
+    # ---------------------------------------------------------
     # Preserve original test-set metadata
     # ---------------------------------------------------------
 
@@ -242,13 +369,8 @@ def run_preprocessing() -> None:
         test_metadata_columns,
     ].copy()
 
-    test_metadata.to_csv(
-        OUTPUT_DIR / "test_metadata.csv",
-        index=False,
-    )
-
     # ---------------------------------------------------------
-    # Save datasets
+    # Save processed datasets
     # ---------------------------------------------------------
 
     X_train_final.to_csv(
@@ -271,39 +393,95 @@ def run_preprocessing() -> None:
         index=False,
     )
 
+    test_metadata.to_csv(
+        OUTPUT_DIR / "test_metadata.csv",
+        index=False,
+    )
+
     # ---------------------------------------------------------
     # Save feature metadata
     # ---------------------------------------------------------
 
-    feature_types = (
-        ["original"] * 5
-        + ["engineered"] * 2
-        + ["categorical_encoded"] * len(type_feature_names)
-    )
-
-    pd.DataFrame(
+    feature_metadata = pd.DataFrame(
         {
             "feature": FEATURES,
-            "type": feature_types,
+            "feature_type": (
+                ["numerical"] * len(NUMERICAL_FEATURES)
+                + ["categorical"] * len(type_feature_names)
+            ),
         }
-    ).to_csv(
+    )
+
+    feature_metadata.to_csv(
         OUTPUT_DIR / "feature_metadata.csv",
         index=False,
     )
 
-    print("\nProcessed files created:")
+    print("\nSaved processed datasets:")
 
-    for file in sorted(OUTPUT_DIR.iterdir()):
-        print(f"  ✓ {file.name}")
+    print("  ✓ X_train.csv")
+    print("  ✓ X_test.csv")
+    print("  ✓ y_train.csv")
+    print("  ✓ y_test.csv")
+    print("  ✓ test_metadata.csv")
+    print("  ✓ feature_metadata.csv")
 
-    print("\nTraining failure rate:")
-    print(f"{y_train.mean() * 100:.2f}%")
+    # ---------------------------------------------------------
+    # Validation
+    # ---------------------------------------------------------
 
-    print("Testing failure rate:")
-    print(f"{y_test.mean() * 100:.2f}%")
+    print("\n" + "-" * 60)
+    print("PREPROCESSING VALIDATION")
+    print("-" * 60)
+
+    print(
+        f"X_train shape : {X_train_final.shape}"
+    )
+
+    print(
+        f"X_test shape  : {X_test_final.shape}"
+    )
+
+    print(
+        f"y_train shape : {y_train.shape}"
+    )
+
+    print(
+        f"y_test shape  : {y_test.shape}"
+    )
+
+    print(
+        f"Failure rate  : {y.mean():.4f}"
+    )
+
+    print(
+        "\nStandardized numerical means:"
+    )
+
+    print(
+        X_train_final[
+            NUMERICAL_FEATURES
+        ]
+        .mean()
+        .round(6)
+        .to_string()
+    )
+
+    print(
+        "\nStandardized numerical std:"
+    )
+
+    print(
+        X_train_final[
+            NUMERICAL_FEATURES
+        ]
+        .std()
+        .round(6)
+        .to_string()
+    )
 
     print("\n" + "=" * 60)
-    print("AI4I PREPROCESSING COMPLETE")
+    print("PREPROCESSING COMPLETE")
     print("=" * 60)
 
 
