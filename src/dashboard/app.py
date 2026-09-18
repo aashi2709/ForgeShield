@@ -74,6 +74,10 @@ from dashboard.views.explainability import (
     render_explainability as _render_explainability,
 )  # noqa: E402
 
+from dashboard.views.incident_intelligence import (
+    render_incident_intelligence as _render_incident_intelligence,
+)  # noqa: E402
+
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -215,6 +219,7 @@ render_machine_intelligence = _render_machine_intelligence
 render_predictive_health = _render_predictive_health
 render_anomaly_detection = _render_anomaly_detection
 render_explainability = _render_explainability
+render_incident_intelligence = _render_incident_intelligence
 
 
 # ---------------------------------------------------------------------------
@@ -227,6 +232,7 @@ def render_secondary_page(
     event: dict,
     report: str,
 ) -> None:
+
     if selected_page == "Machine Intelligence":
         render_machine_intelligence(df)
         return
@@ -241,6 +247,10 @@ def render_secondary_page(
 
     if selected_page == "Explainability":
         render_explainability()
+        return
+
+    if selected_page == "Incident Intelligence":
+        render_incident_intelligence()
         return
 
     page_descriptions = {
