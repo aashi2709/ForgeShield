@@ -12,6 +12,7 @@ bleach==6.4.0
 certifi==2026.7.22
 cffi==2.1.1
 charset-normalizer==3.5.1
+chromadb==1.5.9
 cloudpickle==3.1.2
 comm==0.2.3
 contourpy==1.4.0
@@ -72,6 +73,7 @@ parso==0.8.7
 pexpect==4.9.0
 pillow==12.3.0
 platformdirs==4.11.10
+plotly==7.1.0
 prometheus_client==0.26.0
 prompt_toolkit==3.0.53
 psutil==7.2.2
@@ -94,9 +96,11 @@ scikit-learn==1.9.1
 scipy==1.18.1
 seaborn==0.13.2
 Send2Trash==2.1.0
+sentence_transformers==6.0.1
 six==1.17.0
 soupsieve==2.9.2
 stack-data==0.6.3
+streamlit==1.64.0
 terminado==0.18.1
 threadpoolctl==3.7.0
 tinycss2==1.5.1

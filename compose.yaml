@@ -1,0 +1,24 @@
+services:
+  forgeshield:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: forgeshield
+
+    ports:
+      - "8502:8501"
+
+    environment:
+      OLLAMA_HOST: http://host.docker.internal:11434
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models:ro
+      - ./reports:/app/reports
+      - ./knowledge_base:/app/knowledge_base
+
+    restart: unless-stopped
