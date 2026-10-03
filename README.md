@@ -324,18 +324,6 @@ The Streamlit dashboard brings all research components into a single interface.
 
 ---
 
-## 🎥 Demo
-
-*Demo screenshots and the voice-over walkthrough video will be added here.*
-
-**Planned demonstration flow:**
-
-`Command Center` → `Machine Intelligence` → `Anomaly Detection` → `Predictive Health` → `Explainability` → `Incident Intelligence` → `Safety Copilot` → `Live Monitoring`
-
-<details>
-<summary><strong>Demo highlights (click to expand)</strong></summary>
-
-<br>
 
 **1. High-Risk Machine**
 Show a machine with its failure probability, anomaly score, unified risk, risk band, and actual failure label.
