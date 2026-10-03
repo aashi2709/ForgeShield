@@ -17,5 +17,5 @@ docker compose up -d
 echo ""
 echo "======================================"
 echo " ForgeShield is now running"
-echo " http://localhost:8501"
+echo " http://localhost:8502"
 echo "======================================"
